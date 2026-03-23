@@ -1,0 +1,1935 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PyCompanion — Learn Python</title>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   DESIGN SYSTEM — Terminal Editorial
+   ============================================================ */
+:root {
+  --bg:        #0d0f14;
+  --bg2:       #13161e;
+  --bg3:       #1a1f2e;
+  --surface:   #1e2536;
+  --surface2:  #242c40;
+  --border:    #2a3350;
+  --border2:   #323d5a;
+  --amber:     #f5a623;
+  --amber-dim: #c47d0e;
+  --green:     #39d353;
+  --green-dim: #2aaa42;
+  --cyan:      #58d5e8;
+  --red:       #ff5f6d;
+  --purple:    #b48eff;
+  --text:      #e8eaf2;
+  --text-2:    #8b92ab;
+  --text-3:    #505872;
+  --radius:    10px;
+  --radius-lg: 16px;
+}
+[data-theme="light"] {
+  --bg:        #f5f6fa;
+  --bg2:       #edf0f7;
+  --bg3:       #e4e8f3;
+  --surface:   #ffffff;
+  --surface2:  #f0f2f9;
+  --border:    #d5daea;
+  --border2:   #bfc8de;
+  --text:      #1a1f2e;
+  --text-2:    #4a5270;
+  --text-3:    #8b92ab;
+}
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  overflow: hidden;
+  transition: background 0.3s, color 0.3s;
+}
+
+/* Scanline texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.03) 2px,
+    rgba(0,0,0,0.03) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+[data-theme="light"] body::before { display: none; }
+
+/* ============================================================
+   SIDEBAR
+   ============================================================ */
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: fixed;
+  left: 0; top: 0;
+  z-index: 100;
+  transition: transform 0.3s ease, background 0.3s;
+}
+
+.sidebar-logo {
+  padding: 22px 20px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-mark {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--amber), #ff8c42);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fira Code', monospace;
+  font-weight: 700; font-size: 16px;
+  color: #000;
+  box-shadow: 0 0 18px rgba(245,166,35,0.35);
+  flex-shrink: 0;
+}
+.logo-text { font-family: 'Fira Code', monospace; font-size: 15px; font-weight: 600; color: var(--text); letter-spacing: -0.3px; line-height: 1.2; }
+.logo-text span { color: var(--amber); }
+.logo-sub { font-size: 10px; color: var(--text-3); letter-spacing: 1.5px; text-transform: uppercase; }
+
+.sidebar-search {
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.search-wrap {
+  position: relative;
+}
+.search-wrap input {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 8px 10px 8px 32px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.search-wrap input::placeholder { color: var(--text-3); }
+.search-wrap input:focus { border-color: var(--amber); }
+.search-icon {
+  position: absolute; left: 9px; top: 50%; transform: translateY(-50%);
+  color: var(--text-3); font-size: 13px; pointer-events: none;
+}
+.search-results {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-top: 6px;
+  display: none;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.search-results.show { display: block; }
+.search-item {
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.15s;
+}
+.search-item:hover { background: var(--surface2); }
+.search-item:last-child { border-bottom: none; }
+.search-item strong { color: var(--amber); font-weight: 600; }
+
+.nav-section { padding: 14px 8px 4px; }
+.nav-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 1.8px;
+  text-transform: uppercase; color: var(--text-3);
+  padding: 0 8px; margin-bottom: 4px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 13.5px; font-weight: 500;
+  color: var(--text-2);
+  transition: all 0.15s;
+  margin-bottom: 1px;
+  border: 1px solid transparent;
+}
+.nav-item:hover { background: var(--surface); color: var(--text); }
+.nav-item.active {
+  background: rgba(245,166,35,0.1);
+  color: var(--amber);
+  border-color: rgba(245,166,35,0.2);
+}
+.nav-icon { font-size: 15px; width: 20px; text-align: center; }
+.nav-badge {
+  margin-left: auto;
+  background: var(--amber);
+  color: #000;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 6px; border-radius: 10px;
+  font-family: 'Fira Code', monospace;
+}
+
+.sidebar-bottom {
+  margin-top: auto;
+  padding: 14px;
+  border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.xp-bar-wrap { }
+.xp-bar-label {
+  display: flex; justify-content: space-between;
+  font-size: 11px; color: var(--text-3); margin-bottom: 5px;
+  font-family: 'Fira Code', monospace;
+}
+.xp-bar-track {
+  height: 5px; background: var(--border); border-radius: 3px; overflow: hidden;
+}
+.xp-bar-fill {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--amber), var(--green));
+  width: 42%;
+  box-shadow: 0 0 8px rgba(245,166,35,0.4);
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+.theme-toggle {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; border-radius: 7px;
+  cursor: pointer; font-size: 12px; color: var(--text-2);
+  background: var(--bg3); border: 1px solid var(--border);
+  transition: all 0.15s;
+}
+.theme-toggle:hover { border-color: var(--border2); color: var(--text); }
+.toggle-pill {
+  width: 30px; height: 16px;
+  background: var(--border2); border-radius: 8px;
+  position: relative; margin-left: auto;
+  transition: background 0.2s;
+}
+.toggle-pill::after {
+  content: ''; position: absolute;
+  width: 12px; height: 12px;
+  background: white; border-radius: 50%;
+  top: 2px; left: 2px;
+  transition: transform 0.2s;
+}
+[data-theme="light"] .toggle-pill { background: var(--amber); }
+[data-theme="light"] .toggle-pill::after { transform: translateX(14px); }
+
+/* ============================================================
+   MAIN CONTENT
+   ============================================================ */
+.main {
+  margin-left: 240px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.topbar {
+  padding: 14px 28px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--bg2);
+  gap: 16px;
+  flex-shrink: 0;
+}
+.page-breadcrumb {
+  font-family: 'Fira Code', monospace;
+  font-size: 13px; color: var(--text-3);
+  display: flex; align-items: center; gap: 6px;
+}
+.page-breadcrumb .current { color: var(--amber); }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.streak-chip {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(245,166,35,0.08);
+  border: 1px solid rgba(245,166,35,0.2);
+  padding: 5px 12px; border-radius: 20px;
+  font-size: 12px; font-weight: 600; color: var(--amber);
+  font-family: 'Fira Code', monospace;
+}
+.level-chip {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(57,211,83,0.08);
+  border: 1px solid rgba(57,211,83,0.2);
+  padding: 5px 12px; border-radius: 20px;
+  font-size: 12px; font-weight: 600; color: var(--green);
+  font-family: 'Fira Code', monospace;
+}
+
+.content-area {
+  flex: 1; overflow-y: auto;
+  padding: 0;
+}
+/* custom scrollbar */
+.content-area::-webkit-scrollbar { width: 5px; }
+.content-area::-webkit-scrollbar-track { background: var(--bg2); }
+.content-area::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+/* ============================================================
+   PAGE SYSTEM
+   ============================================================ */
+.page { display: none; animation: fadeSlide 0.25s ease; }
+.page.active { display: block; }
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.page-inner { padding: 28px; max-width: 1080px; }
+
+/* ============================================================
+   COMPONENTS
+   ============================================================ */
+.section-header { margin-bottom: 24px; }
+.section-title {
+  font-size: 26px; font-weight: 700;
+  letter-spacing: -0.5px; color: var(--text);
+  margin-bottom: 6px;
+}
+.section-title .accent { color: var(--amber); }
+.section-sub { font-size: 14px; color: var(--text-2); line-height: 1.6; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.3s;
+  position: relative; overflow: hidden;
+}
+.card:hover { border-color: var(--border2); }
+.card-glow:hover {
+  border-color: rgba(245,166,35,0.4);
+  box-shadow: 0 0 24px rgba(245,166,35,0.08);
+}
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+
+.tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 600;
+  font-family: 'Fira Code', monospace;
+}
+.tag-beginner { background: rgba(57,211,83,0.12); color: var(--green); border: 1px solid rgba(57,211,83,0.2); }
+.tag-intermediate { background: rgba(245,166,35,0.12); color: var(--amber); border: 1px solid rgba(245,166,35,0.2); }
+.tag-advanced { background: rgba(255,95,109,0.12); color: var(--red); border: 1px solid rgba(255,95,109,0.2); }
+.tag-new { background: rgba(88,213,232,0.12); color: var(--cyan); border: 1px solid rgba(88,213,232,0.2); }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 18px; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13.5px; font-weight: 600;
+  cursor: pointer; border: none;
+  transition: all 0.18s; text-decoration: none;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(0) scale(0.98); }
+.btn-primary {
+  background: var(--amber); color: #000;
+  box-shadow: 0 0 16px rgba(245,166,35,0.3);
+}
+.btn-primary:hover { background: #ffba3d; box-shadow: 0 0 24px rgba(245,166,35,0.5); }
+.btn-secondary {
+  background: var(--surface2); color: var(--text);
+  border: 1px solid var(--border2);
+}
+.btn-secondary:hover { border-color: var(--amber); color: var(--amber); }
+.btn-ghost {
+  background: transparent; color: var(--text-2);
+  border: 1px solid var(--border);
+}
+.btn-ghost:hover { background: var(--surface); color: var(--text); }
+.btn-green {
+  background: var(--green); color: #000;
+  box-shadow: 0 0 14px rgba(57,211,83,0.3);
+}
+.btn-green:hover { background: #4de86a; }
+.btn-sm { padding: 6px 14px; font-size: 12px; }
+
+/* ============================================================
+   CODE BLOCKS
+   ============================================================ */
+.code-block {
+  background: #080b12;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 14px 0;
+  font-family: 'Fira Code', monospace;
+}
+.code-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 14px;
+  background: #0d1018;
+  border-bottom: 1px solid var(--border);
+}
+.code-dots { display: flex; gap: 5px; }
+.code-dot { width: 10px; height: 10px; border-radius: 50%; }
+.dot-r { background: #ff5f57; }
+.dot-y { background: #febc2e; }
+.dot-g { background: #28c840; }
+.code-lang { font-size: 11px; color: var(--text-3); }
+.code-copy {
+  font-size: 11px; color: var(--text-3); cursor: pointer;
+  padding: 3px 8px; border-radius: 4px; border: 1px solid var(--border);
+  background: transparent; font-family: 'Fira Code', monospace;
+  transition: all 0.15s;
+}
+.code-copy:hover { color: var(--amber); border-color: var(--amber); }
+.code-body { padding: 16px 18px; font-size: 13px; line-height: 1.8; overflow-x: auto; }
+.code-body::-webkit-scrollbar { height: 4px; }
+.code-body::-webkit-scrollbar-track { background: transparent; }
+.code-body::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+/* syntax */
+.kw { color: #c792ea; }
+.fn { color: #82aaff; }
+.st { color: #c3e88d; }
+.nu { color: #f78c6c; }
+.cm { color: #546e7a; font-style: italic; }
+.pn { color: #89ddff; }
+.cl { color: #ffcb6b; }
+.bl { color: var(--amber); }
+
+/* ============================================================
+   PROGRESS RING
+   ============================================================ */
+.progress-ring-wrap {
+  position: relative; width: 80px; height: 80px;
+}
+.progress-ring-wrap svg { transform: rotate(-90deg); }
+.progress-ring-bg { fill: none; stroke: var(--border2); stroke-width: 6; }
+.progress-ring-fill {
+  fill: none; stroke-width: 6; stroke-linecap: round;
+  stroke: var(--amber);
+  stroke-dasharray: 226;
+  stroke-dashoffset: 226;
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.4,0,0.2,1);
+  filter: drop-shadow(0 0 6px rgba(245,166,35,0.5));
+}
+.progress-ring-text {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Fira Code', monospace;
+  font-size: 14px; font-weight: 700; color: var(--text);
+}
+
+/* ============================================================
+   DASHBOARD
+   ============================================================ */
+.dashboard-hero {
+  background: linear-gradient(135deg, var(--bg3) 0%, rgba(245,166,35,0.04) 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  margin-bottom: 24px;
+  position: relative; overflow: hidden;
+}
+.dashboard-hero::after {
+  content: '</>';
+  position: absolute; right: 32px; bottom: 20px;
+  font-family: 'Fira Code', monospace;
+  font-size: 96px; font-weight: 700;
+  color: rgba(245,166,35,0.04);
+  line-height: 1; pointer-events: none;
+}
+.hero-greeting {
+  font-size: 13px; color: var(--amber);
+  font-family: 'Fira Code', monospace; margin-bottom: 8px;
+}
+.hero-title {
+  font-size: 32px; font-weight: 700;
+  letter-spacing: -1px; margin-bottom: 10px;
+  line-height: 1.2;
+}
+.hero-sub { font-size: 14px; color: var(--text-2); margin-bottom: 22px; line-height: 1.6; max-width: 480px; }
+.hero-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.stat-cards { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 24px; }
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  position: relative; overflow: hidden;
+  transition: all 0.2s;
+}
+.stat-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.stat-card::before {
+  content: ''; position: absolute;
+  bottom: 0; left: 0; right: 0; height: 2px;
+  background: var(--card-accent, var(--amber));
+  opacity: 0.6;
+}
+.stat-val {
+  font-family: 'Fira Code', monospace;
+  font-size: 28px; font-weight: 700;
+  color: var(--card-accent, var(--amber));
+  margin-bottom: 3px;
+}
+.stat-label { font-size: 12px; color: var(--text-3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px; }
+
+/* ============================================================
+   MODULE CARDS
+   ============================================================ */
+.module-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative; overflow: hidden;
+}
+.module-card::before {
+  content: ''; position: absolute;
+  inset: 0; opacity: 0;
+  background: linear-gradient(135deg, rgba(245,166,35,0.06), transparent);
+  transition: opacity 0.2s;
+}
+.module-card:hover { border-color: rgba(245,166,35,0.35); transform: translateY(-2px); }
+.module-card:hover::before { opacity: 1; }
+.module-card.locked { opacity: 0.5; cursor: not-allowed; }
+.module-card.locked:hover { transform: none; border-color: var(--border); }
+.module-card.completed { border-color: rgba(57,211,83,0.3); }
+.module-icon {
+  width: 44px; height: 44px;
+  background: var(--bg3); border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; margin-bottom: 14px;
+  border: 1px solid var(--border);
+}
+.module-title { font-size: 15px; font-weight: 600; margin-bottom: 5px; }
+.module-desc { font-size: 12.5px; color: var(--text-2); line-height: 1.5; margin-bottom: 12px; }
+.module-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 11.5px; color: var(--text-3);
+  font-family: 'Fira Code', monospace;
+}
+.module-progress-bar {
+  height: 3px; background: var(--border); border-radius: 2px;
+  margin-top: 10px; overflow: hidden;
+}
+.module-progress-fill {
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, var(--amber), var(--green));
+  transition: width 0.5s ease;
+}
+
+/* ============================================================
+   EXERCISE / CODE EDITOR
+   ============================================================ */
+.editor-layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 16px;
+  min-height: 500px;
+}
+.editor-panel {
+  background: #080b12;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.editor-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px;
+  background: #0d1018;
+  border-bottom: 1px solid var(--border);
+}
+.editor-title { font-family: 'Fira Code', monospace; font-size: 12px; color: var(--text-3); display: flex; align-items: center; gap: 8px; }
+.editor-filename { color: var(--cyan); }
+.editor-actions { display: flex; gap: 6px; }
+.editor-textarea {
+  flex: 1; padding: 18px;
+  background: transparent; border: none; outline: none;
+  color: var(--text); font-family: 'Fira Code', monospace;
+  font-size: 13px; line-height: 1.8;
+  resize: none; width: 100%; min-height: 280px;
+}
+.output-panel {
+  border-top: 1px solid var(--border);
+  padding: 14px 18px;
+  background: #060810; min-height: 90px;
+  font-family: 'Fira Code', monospace; font-size: 12.5px; line-height: 1.7;
+}
+.output-line { margin-bottom: 2px; }
+.out-success { color: var(--green); }
+.out-error { color: var(--red); }
+.out-info { color: var(--cyan); }
+
+.problem-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden; display: flex; flex-direction: column;
+}
+.problem-header {
+  padding: 14px 18px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+.problem-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+.problem-body { padding: 18px; flex: 1; overflow-y: auto; }
+.problem-desc { font-size: 13.5px; color: var(--text-2); line-height: 1.7; margin-bottom: 14px; }
+
+.test-case {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px;
+  background: var(--bg3);
+  border-radius: 7px; margin-bottom: 7px;
+  border: 1px solid var(--border);
+  font-family: 'Fira Code', monospace; font-size: 12px;
+}
+.test-status {
+  width: 18px; height: 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; flex-shrink: 0;
+}
+.test-pending { background: var(--border2); color: var(--text-3); }
+.test-pass { background: rgba(57,211,83,0.2); color: var(--green); }
+.test-fail { background: rgba(255,95,109,0.2); color: var(--red); }
+
+.hint-box {
+  background: rgba(245,166,35,0.06);
+  border: 1px solid rgba(245,166,35,0.2);
+  border-radius: 8px; padding: 12px 14px;
+  font-size: 13px; color: var(--text-2); line-height: 1.6;
+  margin-top: 12px; display: none;
+}
+.hint-box.show { display: block; }
+
+/* ============================================================
+   QUIZ
+   ============================================================ */
+.quiz-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px; max-width: 680px;
+}
+.quiz-progress {
+  display: flex; gap: 4px; margin-bottom: 20px;
+}
+.quiz-pip {
+  height: 4px; flex: 1; border-radius: 2px; background: var(--border2);
+  transition: background 0.3s;
+}
+.quiz-pip.done { background: var(--green); }
+.quiz-pip.current { background: var(--amber); }
+.quiz-q-label { font-size: 11px; color: var(--text-3); font-family: 'Fira Code', monospace; margin-bottom: 10px; }
+.quiz-question { font-size: 18px; font-weight: 600; margin-bottom: 20px; line-height: 1.5; }
+.quiz-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+.quiz-opt {
+  padding: 13px 16px;
+  background: var(--bg3);
+  border: 2px solid var(--border);
+  border-radius: 9px;
+  cursor: pointer; font-size: 14px; font-weight: 500;
+  color: var(--text-2);
+  display: flex; align-items: center; gap: 12px;
+  transition: all 0.15s;
+  font-family: 'DM Mono', monospace;
+}
+.quiz-opt:hover { border-color: var(--amber); color: var(--text); background: rgba(245,166,35,0.04); }
+.quiz-opt.selected { border-color: var(--amber); color: var(--amber); background: rgba(245,166,35,0.08); }
+.quiz-opt.correct { border-color: var(--green); color: var(--green); background: rgba(57,211,83,0.08); }
+.quiz-opt.wrong { border-color: var(--red); color: var(--red); background: rgba(255,95,109,0.08); }
+.quiz-opt.disabled { pointer-events: none; }
+.opt-key {
+  width: 26px; height: 26px; border-radius: 5px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; flex-shrink: 0;
+  font-family: 'Fira Code', monospace;
+}
+.quiz-explain {
+  background: rgba(88,213,232,0.07);
+  border: 1px solid rgba(88,213,232,0.2);
+  border-radius: 8px; padding: 12px 15px;
+  font-size: 13.5px; color: var(--text-2); line-height: 1.6;
+  margin-bottom: 16px; display: none;
+}
+.quiz-explain.show { display: block; }
+.quiz-score-screen { text-align: center; padding: 32px; }
+
+/* ============================================================
+   PROJECTS
+   ============================================================ */
+.project-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden; transition: all 0.2s;
+}
+.project-card:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.3); }
+.project-banner {
+  height: 90px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px; font-family: 'Fira Code', monospace;
+  letter-spacing: -2px; opacity: 0.6;
+  font-weight: 700;
+}
+.project-body { padding: 18px; }
+.project-name { font-size: 15px; font-weight: 600; margin-bottom: 5px; }
+.project-desc { font-size: 13px; color: var(--text-2); line-height: 1.5; margin-bottom: 12px; }
+.project-tech { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+.tech-pill {
+  font-family: 'Fira Code', monospace;
+  font-size: 10px; padding: 2px 8px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 4px; color: var(--text-2);
+}
+.project-footer {
+  display: flex; align-items: center; justify-content: space-between;
+}
+
+/* ============================================================
+   BADGES / ACHIEVEMENTS
+   ============================================================ */
+.badges-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+.badge-item {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 8px; padding: 16px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  text-align: center; transition: all 0.2s;
+}
+.badge-item:hover { border-color: var(--border2); transform: translateY(-2px); }
+.badge-item.locked { opacity: 0.4; filter: grayscale(1); }
+.badge-icon {
+  width: 52px; height: 52px;
+  border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; font-size: 24px;
+  border: 2px solid transparent;
+}
+.badge-name { font-size: 11px; font-weight: 600; color: var(--text-2); }
+.badge-desc { font-size: 10px; color: var(--text-3); line-height: 1.4; }
+
+/* ============================================================
+   FORUM
+   ============================================================ */
+.forum-post {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+  cursor: pointer; transition: all 0.18s;
+  margin-bottom: 10px;
+}
+.forum-post:hover { border-color: rgba(245,166,35,0.3); }
+.post-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+.post-title { font-size: 14.5px; font-weight: 600; margin-bottom: 5px; }
+.post-excerpt { font-size: 13px; color: var(--text-2); line-height: 1.55; }
+.post-meta { display: flex; gap: 14px; margin-top: 10px; font-size: 11.5px; color: var(--text-3); font-family: 'Fira Code', monospace; }
+.post-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+.forum-compose {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px; margin-bottom: 20px;
+}
+.compose-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; }
+.form-row { margin-bottom: 12px; }
+.form-label { font-size: 11px; color: var(--text-3); font-family: 'Fira Code', monospace; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 5px; }
+.form-input, .form-textarea {
+  width: 100%;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 7px; padding: 9px 12px;
+  color: var(--text); font-family: 'DM Sans', sans-serif;
+  font-size: 13.5px; outline: none;
+  transition: border-color 0.2s;
+}
+.form-input:focus, .form-textarea:focus { border-color: var(--amber); }
+.form-textarea { resize: vertical; min-height: 80px; }
+
+/* ============================================================
+   RESOURCES
+   ============================================================ */
+.resource-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px; transition: all 0.2s;
+}
+.resource-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.resource-type { font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; font-family: 'Fira Code', monospace; margin-bottom: 8px; }
+.resource-name { font-size: 14px; font-weight: 600; margin-bottom: 5px; }
+.resource-desc { font-size: 12.5px; color: var(--text-2); line-height: 1.5; margin-bottom: 12px; }
+
+/* ============================================================
+   VIDEO CARDS
+   ============================================================ */
+.video-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden; cursor: pointer;
+  transition: all 0.2s;
+}
+.video-card:hover { border-color: rgba(245,166,35,0.35); transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.3); }
+.video-thumb {
+  height: 110px;
+  background: linear-gradient(135deg, #0d1018, #151b2a);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+}
+.play-circle {
+  width: 42px; height: 42px;
+  background: rgba(245,166,35,0.9); border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; transition: transform 0.2s;
+  box-shadow: 0 0 20px rgba(245,166,35,0.4);
+}
+.video-card:hover .play-circle { transform: scale(1.1); }
+.video-duration {
+  position: absolute; bottom: 8px; right: 10px;
+  font-family: 'Fira Code', monospace;
+  font-size: 10px; background: rgba(0,0,0,0.7);
+  padding: 2px 7px; border-radius: 3px; color: var(--text);
+}
+.video-body { padding: 14px; }
+.video-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+.video-channel { font-size: 11px; color: var(--text-3); font-family: 'Fira Code', monospace; }
+
+/* ============================================================
+   PROGRESS TRACKER
+   ============================================================ */
+.track-item {
+  display: flex; align-items: center; gap: 16px;
+  padding: 14px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 8px; transition: border-color 0.2s;
+}
+.track-item:hover { border-color: var(--border2); }
+.track-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.track-info { flex: 1; }
+.track-name { font-size: 13.5px; font-weight: 600; margin-bottom: 3px; }
+.track-sub { font-size: 11.5px; color: var(--text-3); font-family: 'Fira Code', monospace; }
+.track-right { text-align: right; flex-shrink: 0; }
+.track-pct { font-family: 'Fira Code', monospace; font-size: 13px; font-weight: 700; }
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 18px;
+  display: flex; align-items: center; gap: 10px;
+  font-size: 13.5px; font-weight: 500;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+  z-index: 9000; transform: translateX(110%);
+  transition: transform 0.3s cubic-bezier(0.4,0,0.2,1);
+  max-width: 320px;
+}
+.toast.show { transform: translateX(0); }
+.toast-icon { font-size: 18px; }
+
+/* ============================================================
+   MODAL
+   ============================================================ */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+  z-index: 500; display: none; align-items: center; justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 18px; padding: 28px;
+  max-width: 500px; width: 90%;
+  position: relative; animation: fadeSlide 0.2s ease;
+}
+.modal-close {
+  position: absolute; top: 14px; right: 16px;
+  background: none; border: none; font-size: 20px;
+  cursor: pointer; color: var(--text-2);
+  line-height: 1; transition: color 0.15s;
+}
+.modal-close:hover { color: var(--text); }
+
+/* ============================================================
+   HAMBURGER (mobile)
+   ============================================================ */
+.hamburger {
+  display: none;
+  position: fixed; top: 14px; left: 14px;
+  z-index: 200; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px; cursor: pointer; color: var(--text);
+  font-size: 18px;
+}
+
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); box-shadow: 8px 0 40px rgba(0,0,0,0.4); }
+  .main { margin-left: 0; }
+  .hamburger { display: flex; }
+  .stat-cards { grid-template-columns: repeat(2,1fr); }
+  .grid-3, .grid-4 { grid-template-columns: repeat(2,1fr); }
+  .editor-layout { grid-template-columns: 1fr; }
+  .badges-grid { grid-template-columns: repeat(3,1fr); }
+  .topbar { padding-left: 56px; }
+}
+@media (max-width: 550px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .stat-cards { grid-template-columns: 1fr 1fr; }
+  .badges-grid { grid-template-columns: repeat(2,1fr); }
+  .page-inner { padding: 16px; }
+  .hero-title { font-size: 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Mobile toggle -->
+<button class="hamburger" id="hamburger" onclick="toggleSidebar()" title="Menu">☰</button>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toastIcon">⭐</span>
+  <span id="toastMsg">Achievement unlocked!</span>
+</div>
+
+<!-- Video Modal -->
+<div class="modal-overlay" id="videoModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('videoModal')">✕</button>
+    <div id="videoModalContent"></div>
+  </div>
+</div>
+
+<!-- ========================== SIDEBAR ========================== -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">Py</div>
+    <div>
+      <div class="logo-text">Py<span>Companion</span></div>
+      <div class="logo-sub">Python Learning</div>
+    </div>
+  </div>
+
+  <div class="sidebar-search">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" placeholder="Search topics…" id="searchInput" oninput="handleSearch(this.value)" autocomplete="off">
+    </div>
+    <div class="search-results" id="searchResults"></div>
+  </div>
+
+  <div class="nav-section" style="flex:1;overflow-y:auto;">
+    <div class="nav-label">Learn</div>
+    <div class="nav-item active" onclick="nav('dashboard',this)"><span class="nav-icon">◉</span>Dashboard</div>
+    <div class="nav-item" onclick="nav('modules',this)"><span class="nav-icon">⬡</span>Course Modules<span class="nav-badge">12</span></div>
+    <div class="nav-item" onclick="nav('exercises',this)"><span class="nav-icon">⌨</span>Exercises</div>
+    <div class="nav-item" onclick="nav('quiz',this)"><span class="nav-icon">◈</span>Quiz Arena</div>
+    <div class="nav-item" onclick="nav('projects',this)"><span class="nav-icon">◳</span>Projects</div>
+    <div class="nav-label" style="margin-top:16px;">Explore</div>
+    <div class="nav-item" onclick="nav('videos',this)"><span class="nav-icon">▷</span>Video Tutorials</div>
+    <div class="nav-item" onclick="nav('resources',this)"><span class="nav-icon">⊕</span>Docs & Resources</div>
+    <div class="nav-item" onclick="nav('forum',this)"><span class="nav-icon">⊙</span>Community</div>
+    <div class="nav-label" style="margin-top:16px;">You</div>
+    <div class="nav-item" onclick="nav('progress',this)"><span class="nav-icon">◎</span>Progress</div>
+    <div class="nav-item" onclick="nav('badges',this)"><span class="nav-icon">✦</span>Badges</div>
+  </div>
+
+  <div class="sidebar-bottom">
+    <div class="xp-bar-wrap">
+      <div class="xp-bar-label"><span>Level 4 · Pythonista</span><span id="xpText">420/1000 XP</span></div>
+      <div class="xp-bar-track"><div class="xp-bar-fill" id="xpFill"></div></div>
+    </div>
+    <div class="theme-toggle" onclick="toggleTheme()">
+      <span id="themeIcon">🌙</span>
+      <span id="themeLabel" style="font-size:12px;font-weight:500;">Dark Mode</span>
+      <div class="toggle-pill"></div>
+    </div>
+  </div>
+</aside>
+
+<!-- ========================== MAIN ========================== -->
+<div class="main">
+  <div class="topbar">
+    <div class="page-breadcrumb">
+      <span>PyCompanion</span>
+      <span style="color:var(--border2);">/</span>
+      <span class="current" id="breadcrumb">Dashboard</span>
+    </div>
+    <div class="topbar-right">
+      <div class="streak-chip">🔥 <span>7d streak</span></div>
+      <div class="level-chip">⚡ <span>420 XP</span></div>
+    </div>
+  </div>
+
+  <div class="content-area">
+
+    <!-- ==================== DASHBOARD ==================== -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-inner">
+        <div class="dashboard-hero">
+          <div class="hero-greeting">// Welcome back, developer</div>
+          <div class="hero-title">Ready to level up<br>your Python skills?</div>
+          <div class="hero-sub">You're 42% through the curriculum. Pick up where you left off or explore a new module.</div>
+          <div class="hero-actions">
+            <button class="btn btn-primary" onclick="nav('exercises',document.querySelectorAll('.nav-item')[2])">▶ Continue Learning</button>
+            <button class="btn btn-secondary" onclick="nav('modules',document.querySelectorAll('.nav-item')[1])">Browse Modules</button>
+          </div>
+        </div>
+
+        <div class="stat-cards">
+          <div class="stat-card" style="--card-accent:var(--amber)">
+            <div class="stat-val">14</div><div class="stat-label">Lessons Done</div>
+          </div>
+          <div class="stat-card" style="--card-accent:var(--green)">
+            <div class="stat-val">89%</div><div class="stat-label">Quiz Accuracy</div>
+          </div>
+          <div class="stat-card" style="--card-accent:var(--cyan)">
+            <div class="stat-val">5</div><div class="stat-label">Projects Built</div>
+          </div>
+          <div class="stat-card" style="--card-accent:var(--purple)">
+            <div class="stat-val">8</div><div class="stat-label">Badges Earned</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:24px;">
+          <div class="section-header">
+            <div class="section-title">Continue Where You Left Off</div>
+          </div>
+          <div class="grid-2">
+            <div class="card card-glow" style="cursor:pointer" onclick="nav('exercises',document.querySelectorAll('.nav-item')[2])">
+              <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+                <div style="width:46px;height:46px;background:rgba(245,166,35,0.1);border:1px solid rgba(245,166,35,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;">⚙️</div>
+                <div>
+                  <div style="font-size:15px;font-weight:600;margin-bottom:3px;">Functions & Scope</div>
+                  <div class="tag tag-intermediate">Intermediate</div>
+                </div>
+              </div>
+              <div style="font-size:13px;color:var(--text-2);margin-bottom:14px;line-height:1.6;">Learn how to define functions, pass arguments, understand return values and variable scope.</div>
+              <div class="module-progress-bar"><div class="module-progress-fill" style="width:60%"></div></div>
+              <div style="font-size:11px;color:var(--text-3);margin-top:6px;font-family:'Fira Code',monospace;">60% complete · ~20 min left</div>
+            </div>
+            <div class="card card-glow" style="cursor:pointer" onclick="nav('quiz',document.querySelectorAll('.nav-item')[3])">
+              <div style="display:flex;align-items:center;gap:14px;margin-bottom:14px;">
+                <div style="width:46px;height:46px;background:rgba(57,211,83,0.1);border:1px solid rgba(57,211,83,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;">◈</div>
+                <div>
+                  <div style="font-size:15px;font-weight:600;margin-bottom:3px;">Daily Quiz Challenge</div>
+                  <div class="tag tag-new">New Today</div>
+                </div>
+              </div>
+              <div style="font-size:13px;color:var(--text-2);margin-bottom:14px;line-height:1.6;">Test your knowledge on Python data structures, list comprehensions, and dict operations.</div>
+              <button class="btn btn-primary btn-sm">Start Quiz →</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-header">
+            <div class="section-title">Recent <span class="accent">Activity</span></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;" id="activityFeed"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== MODULES ==================== -->
+    <div class="page" id="page-modules">
+      <div class="page-inner">
+        <div class="section-header">
+          <div class="section-title">Course <span class="accent">Modules</span></div>
+          <div class="section-sub">12 modules covering beginner to advanced Python. Unlock them in order or jump ahead.</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+          <button class="btn btn-sm btn-primary" onclick="filterModules('all',this)">All</button>
+          <button class="btn btn-sm btn-secondary" onclick="filterModules('beginner',this)">Beginner</button>
+          <button class="btn btn-sm btn-secondary" onclick="filterModules('intermediate',this)">Intermediate</button>
+          <button class="btn btn-sm btn-secondary" onclick="filterModules('advanced',this)">Advanced</button>
+        </div>
+        <div class="grid-3" id="modulesGrid"></div>
+      </div>
+    </div>
+
+    <!-- ==================== EXERCISES ==================== -->
+    <div class="page" id="page-exercises">
+      <div class="page-inner">
+        <div class="section-header">
+          <div class="section-title">Interactive <span class="accent">Exercises</span></div>
+          <div class="section-sub">Write code, get instant feedback. Hints available if you're stuck.</div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;" id="exerciseTabs"></div>
+        <div class="editor-layout">
+          <div class="editor-panel">
+            <div class="editor-topbar">
+              <div class="editor-title">
+                <div class="code-dots"><div class="code-dot dot-r"></div><div class="code-dot dot-y"></div><div class="code-dot dot-g"></div></div>
+                <span class="editor-filename" id="editorFilename">solution.py</span>
+              </div>
+              <div class="editor-actions">
+                <button class="btn btn-sm btn-ghost" onclick="resetCode()">↺ Reset</button>
+                <button class="btn btn-sm btn-ghost" onclick="toggleHint()">💡 Hint</button>
+                <button class="btn btn-sm btn-primary" onclick="runCode()">▶ Run</button>
+              </div>
+            </div>
+            <textarea class="editor-textarea" id="codeEditor" spellcheck="false"></textarea>
+            <div class="output-panel" id="outputPanel">
+              <div class="out-info">// Output will appear here after you run your code</div>
+            </div>
+          </div>
+          <div class="problem-panel">
+            <div class="problem-header">
+              <div class="problem-title" id="problemTitle">Loading…</div>
+              <div style="display:flex;gap:6px;margin-top:6px;" id="problemTags"></div>
+            </div>
+            <div class="problem-body">
+              <div class="problem-desc" id="problemDesc"></div>
+              <div style="font-size:11px;color:var(--text-3);font-family:'Fira Code',monospace;margin-bottom:8px;letter-spacing:0.8px;">TEST CASES</div>
+              <div id="testCases"></div>
+              <div class="hint-box" id="hintBox"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== QUIZ ==================== -->
+    <div class="page" id="page-quiz">
+      <div class="page-inner">
+        <div class="section-header">
+          <div class="section-title">Quiz <span class="accent">Arena</span></div>
+          <div class="section-sub">10 questions. Test your Python knowledge and earn XP.</div>
+        </div>
+        <div id="quizContainer"></div>
+      </div>
+    </div>
+
+    <!-- ==================== PROJECTS ==================== -->
+    <div class="page" id="page-projects">
+      <div class="page-inner">
+        <div class="section-header">
+          <div class="section-title">Project <span class="accent">Lab</span></div>
+          <div class="section-sub">Build real things. Projects are sorted by difficulty — start simple, go further.</div>
+        </div>
+        <div class="grid-3" id="projectsGrid"></div>
+      </div>
+    </div>
+
+    <!-- ==================== VIDEOS ==================== -->
+    <div class="page" id="page-videos">
+      <div class="page-inner">
+        <div class="section-header">
+          <div class="section-title">Video <span class="accent">Tutorials</span></div>
+          <div class="section-sub">Hand-picked YouTube videos to complement each module.</div>
+        </div>
+        <div class="grid-3" id="videoGrid"></div>
+      </div>
+    </div>
+
+    <!-- ==================== RESOURCES ==================== -->
+    <div class="page" id="page-resources">
+      <div class="page-inner">
+        <div class="section-header">
+          <div class="section-title">Docs & <span class="accent">Resources</span></div>
+          <div class="section-sub">Official documentation, cheatsheets, and curated references.</div>
+        </div>
+        <div class="grid-3" id="resourcesGrid"></div>
+      </div>
+    </div>
+
+    <!-- ==================== FORUM ==================== -->
+    <div class="page" id="page-forum">
+      <div class="page-inner">
+        <div class="section-header">
+          <div class="section-title">Community <span class="accent">Forum</span></div>
+          <div class="section-sub">Ask questions, share solutions, collaborate with learners worldwide.</div>
+        </div>
+        <div class="forum-compose">
+          <div class="compose-title">+ Ask the Community</div>
+          <div class="form-row">
+            <div class="form-label">Title</div>
+            <input type="text" class="form-input" placeholder="What's your question?" id="postTitle">
+          </div>
+          <div class="form-row">
+            <div class="form-label">Details</div>
+            <textarea class="form-textarea" placeholder="Describe your problem or share your code…" id="postBody"></textarea>
+          </div>
+          <button class="btn btn-primary" onclick="submitPost()">Post Question</button>
+        </div>
+        <div id="forumPosts"></div>
+      </div>
+    </div>
+
+    <!-- ==================== PROGRESS ==================== -->
+    <div class="page" id="page-progress">
+      <div class="page-inner">
+        <div class="section-header">
+          <div class="section-title">Your <span class="accent">Progress</span></div>
+          <div class="section-sub">Track your learning journey across all modules and challenges.</div>
+        </div>
+        <div class="grid-2" style="margin-bottom:24px;">
+          <div class="card">
+            <div style="display:flex;align-items:center;gap:18px;">
+              <div class="progress-ring-wrap">
+                <svg width="80" height="80" viewBox="0 0 80 80">
+                  <circle class="progress-ring-bg" cx="40" cy="40" r="36"/>
+                  <circle class="progress-ring-fill" id="overallRing" cx="40" cy="40" r="36"/>
+                </svg>
+                <div class="progress-ring-text" id="overallPct">42%</div>
+              </div>
+              <div>
+                <div style="font-size:16px;font-weight:600;margin-bottom:4px;">Overall Completion</div>
+                <div style="font-size:13px;color:var(--text-2);">14 of 33 lessons done</div>
+                <div style="font-size:12px;color:var(--text-3);margin-top:4px;font-family:'Fira Code',monospace;">~4h remaining</div>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div style="font-size:13px;color:var(--text-3);font-family:'Fira Code',monospace;margin-bottom:12px;letter-spacing:0.8px;">WEEKLY ACTIVITY</div>
+            <div style="display:flex;align-items:flex-end;gap:5px;height:70px;" id="weekChart"></div>
+            <div style="display:flex;justify-content:space-around;margin-top:6px;font-size:10px;color:var(--text-3);font-family:'Fira Code',monospace;">
+              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            </div>
+          </div>
+        </div>
+        <div class="section-title" style="font-size:18px;margin-bottom:14px;">Module Breakdown</div>
+        <div id="progressModules"></div>
+      </div>
+    </div>
+
+    <!-- ==================== BADGES ==================== -->
+    <div class="page" id="page-badges">
+      <div class="page-inner">
+        <div class="section-header">
+          <div class="section-title">Badges & <span class="accent">Achievements</span></div>
+          <div class="section-sub">8 of 20 badges earned. Keep learning to unlock more!</div>
+        </div>
+        <div class="badges-grid" id="badgesGrid"></div>
+      </div>
+    </div>
+
+  </div><!-- content-area -->
+</div><!-- main -->
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const modules = [
+  { id:0, icon:'🐍', title:'Python Basics', desc:'Variables, data types, operators, and your first Python program.', level:'beginner', lessons:4, done:4, mins:30 },
+  { id:1, icon:'🔀', title:'Control Flow', desc:'if/elif/else statements, comparison operators, and logical conditions.', level:'beginner', lessons:3, done:3, mins:25 },
+  { id:2, icon:'🔁', title:'Loops', desc:'for loops, while loops, break, continue, and range().', level:'beginner', lessons:4, done:3, mins:35 },
+  { id:3, icon:'⚙️', title:'Functions', desc:'def, parameters, return values, *args, **kwargs, and scope.', level:'intermediate', lessons:4, done:2, mins:40 },
+  { id:4, icon:'📦', title:'Data Structures', desc:'Lists, tuples, sets, and dictionaries — when to use each.', level:'intermediate', lessons:5, done:1, mins:50 },
+  { id:5, icon:'✨', title:'List Comprehensions', desc:'Pythonic one-liners for filtering and transforming data.', level:'intermediate', lessons:2, done:0, mins:20 },
+  { id:6, icon:'📂', title:'File I/O', desc:'Reading and writing files, working with paths, and CSV parsing.', level:'intermediate', lessons:3, done:0, mins:30 },
+  { id:7, icon:'🏛️', title:'OOP Basics', desc:'Classes, objects, __init__, methods, inheritance, and polymorphism.', level:'advanced', lessons:6, done:0, mins:60 },
+  { id:8, icon:'💥', title:'Error Handling', desc:'try/except/finally, custom exceptions, and debugging techniques.', level:'intermediate', lessons:3, done:0, mins:25 },
+  { id:9, icon:'🔧', title:'Modules & Packages', desc:'import, pip, virtualenv, and building your own modules.', level:'advanced', lessons:3, done:0, mins:30 },
+  { id:10, icon:'🌐', title:'APIs & Requests', desc:'Making HTTP requests, working with JSON, and consuming APIs.', level:'advanced', lessons:4, done:0, mins:45 },
+  { id:11, icon:'🧪', title:'Testing', desc:'unittest, pytest, TDD fundamentals, and writing reliable code.', level:'advanced', lessons:3, done:0, mins:35 },
+];
+
+const exercises = [
+  {
+    id:0, filename:'fizzbuzz.py', title:'FizzBuzz Classic',
+    tags:['beginner','loops'],
+    desc:`<p>Print numbers from 1 to n. But for multiples of <strong>3</strong>, print "Fizz". For multiples of <strong>5</strong>, print "Buzz". For multiples of both 3 and 5, print "FizzBuzz".</p><p style="margin-top:8px;font-size:12px;color:var(--text-3);">Example: fizzbuzz(15) prints 1, 2, Fizz, 4, Buzz, Fizz, 7, 8, Fizz, Buzz, 11, Fizz, 13, 14, FizzBuzz</p>`,
+    template:`def fizzbuzz(n):
+    # Write your solution here
+    pass
+
+# Test it
+fizzbuzz(15)`,
+    solution:`def fizzbuzz(n):
+    for i in range(1, n + 1):
+        if i % 15 == 0:
+            print("FizzBuzz")
+        elif i % 3 == 0:
+            print("Fizz")
+        elif i % 5 == 0:
+            print("Buzz")
+        else:
+            print(i)
+
+fizzbuzz(15)`,
+    hint:'💡 Check divisibility by 15 first (both 3 AND 5), then 3, then 5. Use the modulo operator %.',
+    tests:[
+      { label:'fizzbuzz(3) prints Fizz last', pass:null },
+      { label:'fizzbuzz(5) prints Buzz last', pass:null },
+      { label:'fizzbuzz(15) prints FizzBuzz last', pass:null },
+    ],
+    simulate: code => {
+      const hasFizz = code.includes('Fizz');
+      const hasBuzz = code.includes('Buzz');
+      const hasMod = code.includes('%');
+      const hasRange = code.includes('range');
+      if (hasFizz && hasBuzz && hasMod && hasRange) {
+        return { ok:true, output:'1\n2\nFizz\n4\nBuzz\nFizz\n7\n8\nFizz\nBuzz\n11\nFizz\n13\n14\nFizzBuzz\n\n✓ All 3 test cases passed!' };
+      }
+      if (!hasRange) return { ok:false, output:'NameError: range is needed for your loop.' };
+      return { ok:false, output:'Logic incomplete. Check your conditions and modulo operator.' };
+    }
+  },
+  {
+    id:1, filename:'palindrome.py', title:'Palindrome Check',
+    tags:['beginner','strings'],
+    desc:`<p>Write a function <code style="color:var(--amber)">is_palindrome(s)</code> that returns <code style="color:var(--green)">True</code> if a string reads the same forwards and backwards. Ignore case and spaces.</p>`,
+    template:`def is_palindrome(s):
+    # Clean the string (lowercase, no spaces)
+    # Then compare with its reverse
+    pass
+
+print(is_palindrome("racecar"))   # True
+print(is_palindrome("Race Car"))  # True
+print(is_palindrome("hello"))     # False`,
+    hint:'💡 Use s.lower().replace(" ","") to clean, then compare with cleaned[::-1] to reverse.',
+    tests:[
+      { label:'is_palindrome("racecar") → True', pass:null },
+      { label:'is_palindrome("Race Car") → True', pass:null },
+      { label:'is_palindrome("hello") → False', pass:null },
+    ],
+    simulate: code => {
+      const hasReverse = code.includes('[::-1]') || code.includes('reversed');
+      const hasLower = code.includes('.lower()') || code.includes('lower');
+      if (hasReverse) {
+        return { ok:true, output:'True\nTrue\nFalse\n\n✓ All 3 test cases passed!' };
+      }
+      return { ok:false, output:'Hint: Use string slicing [::-1] to reverse the string.' };
+    }
+  },
+  {
+    id:2, filename:'fibonacci.py', title:'Fibonacci Sequence',
+    tags:['intermediate','loops'],
+    desc:`<p>Return a list of the first <code style="color:var(--amber)">n</code> Fibonacci numbers. The sequence starts with 0, 1 — each subsequent number is the sum of the two preceding ones.</p>`,
+    template:`def fibonacci(n):
+    # Return list of first n Fibonacci numbers
+    pass
+
+print(fibonacci(8))  # [0, 1, 1, 2, 3, 5, 8, 13]`,
+    hint:'💡 Start with result = [0, 1], then loop from 2 to n, appending result[-1] + result[-2].',
+    tests:[
+      { label:'fibonacci(1) → [0]', pass:null },
+      { label:'fibonacci(5) → [0,1,1,2,3]', pass:null },
+      { label:'fibonacci(8) → [0,1,1,2,3,5,8,13]', pass:null },
+    ],
+    simulate: code => {
+      const hasAppend = code.includes('append');
+      const hasList = code.includes('[') && code.includes(']');
+      if (hasAppend && hasList) {
+        return { ok:true, output:'[0, 1, 1, 2, 3, 5, 8, 13]\n\n✓ All 3 test cases passed!' };
+      }
+      return { ok:false, output:'Try using a list and the .append() method.' };
+    }
+  },
+  {
+    id:3, filename:'word_freq.py', title:'Word Frequency',
+    tags:['intermediate','dicts'],
+    desc:`<p>Write a function that takes a string and returns a dictionary with each word's frequency count. Words should be lowercased and punctuation stripped.</p>`,
+    template:`def word_freq(text):
+    # Return dict of {word: count}
+    pass
+
+text = "the quick brown fox the fox"
+print(word_freq(text))
+# {'the': 2, 'quick': 1, 'brown': 1, 'fox': 2}`,
+    hint:'💡 Use text.lower().split() to get words. Then loop and use dict.get(word, 0) + 1.',
+    tests:[
+      { label:'{"the":2,"fox":2} for sample text', pass:null },
+      { label:'All words lowercased', pass:null },
+      { label:'Returns a dict type', pass:null },
+    ],
+    simulate: code => {
+      const hasDict = code.includes('{}') || code.includes('dict(') || code.includes('get(');
+      const hasSplit = code.includes('.split()');
+      if (hasDict && hasSplit) {
+        return { ok:true, output:"{'the': 2, 'quick': 1, 'brown': 1, 'fox': 2}\n\n✓ All 3 test cases passed!" };
+      }
+      return { ok:false, output:'Try using a dictionary and .split() to break text into words.' };
+    }
+  },
+];
+
+const quizData = [
+  { q:"What is the output of: print(type(3.14))?", opts:["<class 'int'>","<class 'float'>","<class 'str'>","<class 'num'>"], ans:1, expl:"3.14 is a float. Python's type() returns the class of an object. Floats are numbers with decimal points." },
+  { q:"Which of these creates a list in Python?", opts:["(1, 2, 3)","{ 1, 2, 3 }","[ 1, 2, 3 ]","< 1, 2, 3 >"], ans:2, expl:"Square brackets [] create lists. () = tuple, {} = set or dict, <> is not valid Python syntax." },
+  { q:"What does the `//` operator do?", opts:["Creates a comment","Floor division (rounds down)","Logical OR","Power operation"], ans:1, expl:"// is floor division — it divides and rounds down to the nearest integer. e.g., 7 // 2 = 3" },
+  { q:"How do you define a function in Python?", opts:["function myFunc():","def myFunc():","fn myFunc():","define myFunc():"], ans:1, expl:"Python uses the 'def' keyword to define functions. It's short for 'define'." },
+  { q:"What is a dictionary in Python?", opts:["An ordered sequence of items","A collection of unique items","A key-value pair mapping","A fixed-size array"], ans:2, expl:"A dictionary (dict) maps unique keys to values. Access values using dict[key]. Keys must be hashable." },
+  { q:"What does list[-1] return?", opts:["An error","The first element","The last element","None"], ans:2, expl:"Negative indexing in Python counts from the end. -1 is the last element, -2 is second-to-last, etc." },
+  { q:"Which keyword is used to handle exceptions?", opts:["catch","except","handle","rescue"], ans:1, expl:"Python uses 'except' in a try/except block. Other languages use 'catch' — Python chose 'except'." },
+  { q:"What does the 'self' parameter represent in a class?", opts:["A keyword for static methods","A reference to the current instance","The class name","A global variable"], ans:1, expl:"'self' is the first parameter of instance methods. It refers to the instance calling the method, allowing access to its attributes." },
+  { q:"What is the output of: print([x**2 for x in range(4)])?", opts:["[1, 4, 9, 16]","[0, 1, 4, 9]","[0, 1, 2, 3]","[0, 1, 4, 9, 16]"], ans:1, expl:"range(4) gives [0,1,2,3]. Squaring each: 0²=0, 1²=1, 2²=4, 3²=9. List comprehension result: [0,1,4,9]" },
+  { q:"Which of these is a valid way to open a file safely?", opts:["file = open('f.txt')","with open('f.txt') as f:","open file 'f.txt':","file.open('f.txt')"], ans:1, expl:"The 'with' statement (context manager) automatically closes the file even if an error occurs. Always prefer it." },
+];
+
+const projects = [
+  { icon:'🔢', name:'CLI Calculator', desc:'Build a terminal calculator supporting +, -, *, / and handles divide-by-zero errors gracefully.', level:'beginner', tech:['variables','input()','try/except'], banner:'#151b2a', bannerText:'calc.py' },
+  { icon:'✅', name:'Todo List App', desc:'Create a command-line todo manager with add, complete, delete, and save-to-file features.', level:'beginner', tech:['lists','file I/O','functions'], banner:'#12181a', bannerText:'todo.py' },
+  { icon:'🎲', name:'Number Guessing Game', desc:'A random number game with difficulty levels, hints, and a high-score tracker.', level:'beginner', tech:['random','loops','functions'], banner:'#131a1a', bannerText:'game.py' },
+  { icon:'📊', name:'CSV Data Analyzer', desc:'Read a CSV file, compute statistics (mean, median, max/min), and generate a report.', level:'intermediate', tech:['csv','dicts','file I/O'], banner:'#131520', bannerText:'analyze.py' },
+  { icon:'🕸️', name:'Web Scraper', desc:'Scrape product prices from a website using requests + BeautifulSoup and save to JSON.', level:'intermediate', tech:['requests','bs4','json'], banner:'#171320', bannerText:'scraper.py' },
+  { icon:'🤖', name:'Chatbot', desc:'Build a rule-based chatbot with pattern matching, memory, and personality using re module.', level:'intermediate', tech:['re','classes','dicts'], banner:'#181420', bannerText:'bot.py' },
+  { icon:'📈', name:'Stock Price Tracker', desc:'Fetch live stock data from an API, display trends, and send alerts when thresholds are crossed.', level:'advanced', tech:['APIs','json','OOP'], banner:'#141f18', bannerText:'stocks.py' },
+  { icon:'🎮', name:'Snake Game', desc:'Classic Snake game using pygame — OOP design with score tracking and increasing difficulty.', level:'advanced', tech:['pygame','OOP','events'], banner:'#141820', bannerText:'snake.py' },
+  { icon:'🔐', name:'Password Manager', desc:'Encrypted password storage using cryptography library with CLI interface and master password.', level:'advanced', tech:['cryptography','file I/O','OOP'], banner:'#1a1418', bannerText:'vault.py' },
+];
+
+const videos = [
+  { title:'Python for Beginners - Full Course', channel:'freeCodeCamp', dur:'4:26:51', url:'https://www.youtube.com/watch?v=rfscVS0vtbw', topic:'Python Basics' },
+  { title:'Python Functions Tutorial', channel:'Corey Schafer', dur:'24:49', url:'https://www.youtube.com/watch?v=9Os0o3wzB0s', topic:'Functions' },
+  { title:'Object Oriented Programming with Python', channel:'Corey Schafer', dur:'1:54:00', url:'https://www.youtube.com/watch?v=ZDa-Z5JzLYM', topic:'OOP' },
+  { title:'Python Lists, Tuples & Dicts', channel:'Tech With Tim', dur:'32:14', url:'https://www.youtube.com/watch?v=W8KRzm-HUcc', topic:'Data Structures' },
+  { title:'Python Error Handling (try/except)', channel:'Corey Schafer', dur:'17:25', url:'https://www.youtube.com/watch?v=NIWwJbo-9_8', topic:'Exceptions' },
+  { title:'Python Decorators in 12 Minutes', channel:'NeuralNine', dur:'12:03', url:'https://www.youtube.com/watch?v=r7Dtus7N4pI', topic:'Advanced' },
+];
+
+const resources = [
+  { type:'📄 Official Docs', typeColor:'var(--cyan)', name:'Python.org Documentation', desc:'The official Python 3 reference — includes the standard library, language reference, and tutorials.', url:'https://docs.python.org/3/' },
+  { type:'📝 Cheatsheet', typeColor:'var(--amber)', name:'Python Cheatsheet', desc:'Quick reference for syntax, data types, built-ins, string methods, and common patterns.', url:'https://www.pythoncheatsheet.org/' },
+  { type:'🎓 Tutorial', typeColor:'var(--green)', name:'Real Python', desc:'In-depth tutorials, articles and video courses for all Python skill levels.', url:'https://realpython.com/' },
+  { type:'📦 Package Index', typeColor:'var(--purple)', name:'PyPI — pip packages', desc:'The Python Package Index — browse 500k+ open-source libraries you can install with pip.', url:'https://pypi.org/' },
+  { type:'🧪 Practice', typeColor:'var(--red)', name:'LeetCode — Python Problems', desc:'Thousands of algorithmic challenges. Filter by Python tag and difficulty level.', url:'https://leetcode.com/' },
+  { type:'📚 Book', typeColor:'var(--cyan)', name:'Automate the Boring Stuff', desc:'Free online book for practical Python programming — automation, files, web scraping and more.', url:'https://automatetheboringstuff.com/' },
+  { type:'🌐 Interactive', typeColor:'var(--amber)', name:'Python Tutor', desc:'Visualize Python code execution step by step — great for understanding loops and recursion.', url:'https://pythontutor.com/' },
+  { type:'🏋️ Practice', typeColor:'var(--green)', name:'Exercism — Python Track', desc:'80+ exercises with mentor feedback. Great for moving from beginner to confident coder.', url:'https://exercism.org/tracks/python' },
+  { type:'📺 YouTube', typeColor:'var(--red)', name:'Corey Schafer\'s Channel', desc:'One of the best Python YouTube channels — clear, deep-dive tutorials on every Python topic.', url:'https://www.youtube.com/@coreyms' },
+];
+
+const forumPosts = [
+  { author:'alice_dev', avatar:'AD', color:'#f5a623', title:'Why does list mutation affect original variable?', excerpt:'I passed a list to a function and modified it, now the original list changed outside the function too. Is this a bug?', tags:['lists','scope','beginner'], replies:8, likes:14, time:'2h ago' },
+  { author:'py_wizard', avatar:'PW', color:'#39d353', title:'Best way to read large CSV files in Python?', excerpt:'I have a 2GB CSV and pandas is running out of memory. Should I use chunking or another library?', tags:['csv','performance','pandas'], replies:12, likes:22, time:'5h ago' },
+  { author:'coder42', avatar:'C4', color:'#58d5e8', title:'Difference between @staticmethod and @classmethod?', excerpt:'I know they\'re both decorators on classes but I keep confusing when to use which one.', tags:['OOP','decorators','intermediate'], replies:6, likes:19, time:'1d ago' },
+  { author:'learn_fast', avatar:'LF', color:'#b48eff', title:'How to handle async/await in Python properly?', excerpt:'Coming from JavaScript and struggling to understand asyncio. The event loop concept is confusing me.', tags:['async','asyncio','advanced'], replies:15, likes:31, time:'2d ago' },
+];
+
+const badges = [
+  { icon:'🐣', name:'First Steps', desc:'Complete your first lesson', bg:'rgba(245,166,35,0.15)', border:'rgba(245,166,35,0.3)', earned:true },
+  { icon:'🔥', name:'On Fire', desc:'7-day streak', bg:'rgba(255,95,109,0.15)', border:'rgba(255,95,109,0.3)', earned:true },
+  { icon:'💯', name:'Perfect Score', desc:'100% on a quiz', bg:'rgba(57,211,83,0.15)', border:'rgba(57,211,83,0.3)', earned:true },
+  { icon:'⚡', name:'Speed Coder', desc:'Solve exercise in <5 min', bg:'rgba(245,166,35,0.15)', border:'rgba(245,166,35,0.3)', earned:true },
+  { icon:'🏗️', name:'Builder', desc:'Complete first project', bg:'rgba(88,213,232,0.15)', border:'rgba(88,213,232,0.3)', earned:true },
+  { icon:'🎯', name:'Sharp Shooter', desc:'10 quizzes passed', bg:'rgba(180,142,255,0.15)', border:'rgba(180,142,255,0.3)', earned:true },
+  { icon:'📦', name:'Module Master', desc:'Complete a full module', bg:'rgba(57,211,83,0.15)', border:'rgba(57,211,83,0.3)', earned:true },
+  { icon:'🤝', name:'Community Star', desc:'10 helpful forum replies', bg:'rgba(245,166,35,0.15)', border:'rgba(245,166,35,0.3)', earned:true },
+  { icon:'🐍', name:'Snake Charmer', desc:'Complete OOP module', bg:'rgba(255,95,109,0.15)', border:'rgba(255,95,109,0.3)', earned:false },
+  { icon:'🧙', name:'Py Wizard', desc:'500 XP earned', bg:'rgba(180,142,255,0.15)', border:'rgba(180,142,255,0.3)', earned:false },
+  { icon:'📡', name:'API Caller', desc:'Complete APIs module', bg:'rgba(88,213,232,0.15)', border:'rgba(88,213,232,0.3)', earned:false },
+  { icon:'🧪', name:'Test Pilot', desc:'Write 10 unit tests', bg:'rgba(57,211,83,0.15)', border:'rgba(57,211,83,0.3)', earned:false },
+  { icon:'🚀', name:'Launcher', desc:'Deploy a project', bg:'rgba(245,166,35,0.15)', border:'rgba(245,166,35,0.3)', earned:false },
+  { icon:'📖', name:'Bookworm', desc:'Read 5 resource docs', bg:'rgba(180,142,255,0.15)', border:'rgba(180,142,255,0.3)', earned:false },
+  { icon:'💎', name:'Diamond Coder', desc:'1000 XP earned', bg:'rgba(88,213,232,0.15)', border:'rgba(88,213,232,0.3)', earned:false },
+];
+
+const activity = [
+  { icon:'✅', text:'Completed "Control Flow" module', time:'Today, 09:14', color:'var(--green)' },
+  { icon:'◈', text:'Scored 90% on Loops Quiz', time:'Yesterday, 16:32', color:'var(--amber)' },
+  { icon:'⌨', text:'Solved FizzBuzz exercise', time:'Yesterday, 15:10', color:'var(--cyan)' },
+  { icon:'✦', text:'Earned "Speed Coder" badge', time:'2 days ago', color:'var(--purple)' },
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let currentExercise = 0;
+let quizIndex = 0;
+let quizScore = 0;
+let quizAnswered = false;
+let hintVisible = false;
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+function nav(pageId, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+  if (el) el.classList.add('active');
+  const labels = {
+    dashboard:'Dashboard', modules:'Course Modules', exercises:'Exercises',
+    quiz:'Quiz Arena', projects:'Project Lab', videos:'Video Tutorials',
+    resources:'Docs & Resources', forum:'Community Forum',
+    progress:'Progress', badges:'Badges'
+  };
+  document.getElementById('breadcrumb').textContent = labels[pageId] || pageId;
+  if (window.innerWidth <= 900) closeSidebar();
+  // Lazy init
+  if (pageId === 'quiz' && quizIndex === 0) renderQuiz();
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+}
+
+// ============================================================
+// THEME
+// ============================================================
+function toggleTheme() {
+  const html = document.documentElement;
+  const dark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', dark ? 'light' : 'dark');
+  document.getElementById('themeIcon').textContent = dark ? '☀️' : '🌙';
+  document.getElementById('themeLabel').textContent = dark ? 'Light Mode' : 'Dark Mode';
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(icon, msg) {
+  const t = document.getElementById('toast');
+  document.getElementById('toastIcon').textContent = icon;
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ============================================================
+// SEARCH
+// ============================================================
+const searchIndex = [
+  ...modules.map(m => ({ label: m.title, sub: m.desc.slice(0,50)+'…', page: 'modules' })),
+  ...exercises.map(e => ({ label: e.title, sub: 'Coding exercise', page: 'exercises' })),
+  { label: 'Quiz Arena', sub: 'Test your Python knowledge', page: 'quiz' },
+  { label: 'Video Tutorials', sub: 'YouTube videos for each topic', page: 'videos' },
+  { label: 'Community Forum', sub: 'Ask and answer questions', page: 'forum' },
+  { label: 'Progress Tracker', sub: 'View your learning stats', page: 'progress' },
+];
+
+function handleSearch(q) {
+  const box = document.getElementById('searchResults');
+  if (!q.trim()) { box.classList.remove('show'); return; }
+  const results = searchIndex.filter(i =>
+    i.label.toLowerCase().includes(q.toLowerCase()) ||
+    i.sub.toLowerCase().includes(q.toLowerCase())
+  ).slice(0, 6);
+  if (!results.length) { box.innerHTML = '<div class="search-item" style="color:var(--text-3)">No results found</div>'; box.classList.add('show'); return; }
+  box.innerHTML = results.map(r =>
+    `<div class="search-item" onclick="nav('${r.page}',null);document.getElementById('searchInput').value='';document.getElementById('searchResults').classList.remove('show')">
+      <strong>${r.label}</strong>
+      <div style="color:var(--text-3);font-size:11px;margin-top:2px;">${r.sub}</div>
+    </div>`
+  ).join('');
+  box.classList.add('show');
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.sidebar-search')) {
+    document.getElementById('searchResults').classList.remove('show');
+  }
+});
+
+// ============================================================
+// DASHBOARD ACTIVITY
+// ============================================================
+function renderActivity() {
+  document.getElementById('activityFeed').innerHTML = activity.map(a =>
+    `<div class="track-item">
+      <div class="track-icon" style="background:rgba(255,255,255,0.04);border:1px solid var(--border);font-size:16px;color:${a.color}">${a.icon}</div>
+      <div class="track-info">
+        <div class="track-name">${a.text}</div>
+        <div class="track-sub">${a.time}</div>
+      </div>
+    </div>`
+  ).join('');
+}
+
+// ============================================================
+// MODULES
+// ============================================================
+function renderModules(filter = 'all') {
+  const grid = document.getElementById('modulesGrid');
+  const filtered = filter === 'all' ? modules : modules.filter(m => m.level === filter);
+  const tagClass = { beginner:'tag-beginner', intermediate:'tag-intermediate', advanced:'tag-advanced' };
+  grid.innerHTML = filtered.map(m => {
+    const pct = m.lessons > 0 ? Math.round((m.done / m.lessons) * 100) : 0;
+    const cls = pct === 100 ? 'completed' : (m.id > 7 ? 'locked' : '');
+    return `<div class="module-card ${cls}" onclick="openModule(${m.id})">
+      <div class="module-icon">${m.icon}</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">
+        <div class="module-title">${m.title}</div>
+        <div class="tag ${tagClass[m.level]}">${m.level}</div>
+      </div>
+      <div class="module-desc">${m.desc}</div>
+      <div class="module-meta">
+        <span>${m.lessons} lessons</span>
+        <span>${m.mins} min</span>
+        <span style="color:${pct===100?'var(--green)':'var(--text-3)'}">${pct===100?'✓ Done':pct+'%'}</span>
+      </div>
+      <div class="module-progress-bar">
+        <div class="module-progress-fill" style="width:${pct}%"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterModules(level, btn) {
+  document.querySelectorAll('#page-modules .btn').forEach(b => b.className = 'btn btn-sm btn-secondary');
+  btn.className = 'btn btn-sm btn-primary';
+  renderModules(level);
+}
+
+function openModule(id) {
+  const m = modules[id];
+  if (id > 7) { showToast('🔒', 'Complete previous modules to unlock this one!'); return; }
+  nav('exercises', document.querySelectorAll('.nav-item')[2]);
+  showToast('📖', `Loading: ${m.title}`);
+}
+
+// ============================================================
+// EXERCISES
+// ============================================================
+function renderExerciseTabs() {
+  document.getElementById('exerciseTabs').innerHTML = exercises.map((e, i) =>
+    `<button class="btn btn-sm ${i===0?'btn-primary':'btn-secondary'}" id="etab-${i}" onclick="loadExercise(${i},this)">${e.title}</button>`
+  ).join('');
+}
+
+function loadExercise(idx, btn) {
+  currentExercise = idx;
+  hintVisible = false;
+  document.getElementById('hintBox').classList.remove('show');
+  const ex = exercises[idx];
+  document.getElementById('editorFilename').textContent = ex.filename;
+  document.getElementById('codeEditor').value = ex.template;
+  document.getElementById('problemTitle').textContent = ex.title;
+  document.getElementById('problemTags').innerHTML = ex.tags.map(t =>
+    `<div class="tag tag-${t==='beginner'?'beginner':t==='intermediate'?'intermediate':'advanced'}">${t}</div>`
+  ).join('');
+  document.getElementById('problemDesc').innerHTML = ex.desc;
+  document.getElementById('hintBox').textContent = ex.hint;
+  renderTestCases(ex.tests);
+  document.getElementById('outputPanel').innerHTML = `<div class="out-info">// Output will appear here after you run your code</div>`;
+  document.querySelectorAll('#exerciseTabs .btn').forEach(b => b.className = 'btn btn-sm btn-secondary');
+  if (btn) btn.className = 'btn btn-sm btn-primary';
+  else document.getElementById('etab-0').className = 'btn btn-sm btn-primary';
+}
+
+function renderTestCases(tests) {
+  document.getElementById('testCases').innerHTML = tests.map((t, i) =>
+    `<div class="test-case" id="tc-${i}">
+      <div class="test-status test-pending" id="ts-${i}">•</div>
+      <span>${t.label}</span>
+    </div>`
+  ).join('');
+}
+
+function runCode() {
+  const code = document.getElementById('codeEditor').value;
+  const ex = exercises[currentExercise];
+  const result = ex.simulate(code);
+  const panel = document.getElementById('outputPanel');
+
+  if (result.ok) {
+    panel.innerHTML = result.output.split('\n').map(l =>
+      `<div class="output-line ${l.startsWith('✓')?'out-success':''}">${l}</div>`
+    ).join('');
+    ex.tests.forEach((_, i) => {
+      document.getElementById(`ts-${i}`).className = 'test-status test-pass';
+      document.getElementById(`ts-${i}`).textContent = '✓';
+    });
+    showToast('⭐', 'Exercise solved! +50 XP');
+  } else {
+    panel.innerHTML = `<div class="output-line out-error">Error: ${result.output}</div>`;
+  }
+}
+
+function resetCode() {
+  loadExercise(currentExercise, document.getElementById(`etab-${currentExercise}`));
+}
+
+function toggleHint() {
+  hintVisible = !hintVisible;
+  document.getElementById('hintBox').classList.toggle('show', hintVisible);
+}
+
+// ============================================================
+// QUIZ
+// ============================================================
+function renderQuiz() {
+  if (quizIndex >= quizData.length) {
+    const pct = Math.round((quizScore / quizData.length) * 100);
+    const emoji = pct >= 80 ? '🏆' : pct >= 60 ? '⭐' : '💪';
+    document.getElementById('quizContainer').innerHTML = `
+      <div class="quiz-card" style="max-width:500px;">
+        <div class="quiz-score-screen">
+          <div style="font-size:64px;margin-bottom:16px;">${emoji}</div>
+          <div style="font-size:28px;font-weight:700;margin-bottom:6px;">${pct >= 80 ? 'Brilliant!' : pct >= 60 ? 'Well done!' : 'Keep practicing!'}</div>
+          <div style="font-family:'Fira Code',monospace;font-size:48px;font-weight:700;color:var(--amber);margin:16px 0;">${pct}%</div>
+          <div style="color:var(--text-2);margin-bottom:24px;">You scored <strong>${quizScore}</strong> out of <strong>${quizData.length}</strong></div>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+            <button class="btn btn-primary" onclick="quizIndex=0;quizScore=0;renderQuiz()">↺ Retry Quiz</button>
+            <button class="btn btn-secondary" onclick="nav('modules',null);showToast('📖','Explore modules to learn more!')">Browse Modules</button>
+          </div>
+        </div>
+      </div>`;
+    if (pct >= 80) showToast('🏆', 'Achievement: Quiz Master! +150 XP');
+    return;
+  }
+
+  const q = quizData[quizIndex];
+  const keys = ['A','B','C','D'];
+  const pips = quizData.map((_,i) =>
+    `<div class="quiz-pip ${i<quizIndex?'done':i===quizIndex?'current':''}"></div>`
+  ).join('');
+
+  document.getElementById('quizContainer').innerHTML = `
+    <div class="quiz-card">
+      <div class="quiz-progress">${pips}</div>
+      <div class="quiz-q-label">Question ${quizIndex+1} of ${quizData.length}</div>
+      <div class="quiz-question">${q.q}</div>
+      <div class="quiz-options">
+        ${q.opts.map((o,i) => `
+          <button class="quiz-opt" id="qopt-${i}" onclick="answerQuiz(${i})">
+            <div class="opt-key">${keys[i]}</div>${o}
+          </button>`).join('')}
+      </div>
+      <div class="quiz-explain" id="quizExplain">${q.expl}</div>
+      <div style="display:flex;gap:10px;align-items:center;" id="quizNextWrap" style="display:none">
+        <button class="btn btn-primary" id="quizNextBtn" onclick="quizIndex++;renderQuiz();" style="display:none;">
+          ${quizIndex < quizData.length-1 ? 'Next Question →' : 'See Results 🎉'}
+        </button>
+        <span class="level-chip" id="quizXpChip" style="display:none;">+10 XP</span>
+      </div>
+    </div>`;
+  quizAnswered = false;
+}
+
+function answerQuiz(idx) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+  const correct = quizData[quizIndex].ans;
+  document.querySelectorAll('.quiz-opt').forEach((o, i) => {
+    o.classList.add('disabled');
+    if (i === correct) o.classList.add('correct');
+    else if (i === idx) o.classList.add('wrong');
+  });
+  if (idx === correct) {
+    quizScore++;
+    document.getElementById('quizXpChip').style.display = 'inline-flex';
+  }
+  document.getElementById('quizExplain').classList.add('show');
+  document.getElementById('quizNextBtn').style.display = 'inline-flex';
+}
+
+// ============================================================
+// PROJECTS
+// ============================================================
+function renderProjects() {
+  const tagClass = { beginner:'tag-beginner', intermediate:'tag-intermediate', advanced:'tag-advanced' };
+  document.getElementById('projectsGrid').innerHTML = projects.map(p =>
+    `<div class="project-card">
+      <div class="project-banner" style="background:${p.banner}">
+        <span style="color:rgba(245,166,35,0.25);font-size:32px;">${p.bannerText}</span>
+      </div>
+      <div class="project-body">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+          <span style="font-size:22px;">${p.icon}</span>
+          <div class="project-name">${p.name}</div>
+        </div>
+        <div class="project-desc">${p.desc}</div>
+        <div class="project-tech">${p.tech.map(t=>`<div class="tech-pill">${t}</div>`).join('')}</div>
+        <div class="project-footer">
+          <div class="tag ${tagClass[p.level]}">${p.level}</div>
+          <button class="btn btn-sm btn-primary" onclick="showToast('🚀','Starting: ${p.name}!')">Start Project →</button>
+        </div>
+      </div>
+    </div>`
+  ).join('');
+}
+
+// ============================================================
+// VIDEOS
+// ============================================================
+function renderVideos() {
+  document.getElementById('videoGrid').innerHTML = videos.map((v,i) =>
+    `<div class="video-card" onclick="openVideo(${i})">
+      <div class="video-thumb">
+        <div class="play-circle">▶</div>
+        <div class="video-duration">${v.dur}</div>
+      </div>
+      <div class="video-body">
+        <div class="video-title">${v.title}</div>
+        <div class="video-channel">${v.channel} · ${v.topic}</div>
+      </div>
+    </div>`
+  ).join('');
+}
+
+function openVideo(i) {
+  const v = videos[i];
+  document.getElementById('videoModalContent').innerHTML = `
+    <div style="font-size:13px;color:var(--text-3);font-family:'Fira Code',monospace;margin-bottom:8px;">${v.topic}</div>
+    <div style="font-size:18px;font-weight:600;margin-bottom:6px;">${v.title}</div>
+    <div style="font-size:13px;color:var(--text-2);margin-bottom:20px;">${v.channel} · ${v.dur}</div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center;margin-bottom:20px;">
+      <div style="font-size:40px;margin-bottom:10px;">▶</div>
+      <div style="font-size:13px;color:var(--text-3);">Video preview — click below to watch on YouTube</div>
+    </div>
+    <a href="${v.url}" target="_blank" class="btn btn-primary" style="display:inline-flex;">Watch on YouTube ↗</a>`;
+  document.getElementById('videoModal').classList.add('show');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('show'); }
+
+// ============================================================
+// RESOURCES
+// ============================================================
+function renderResources() {
+  document.getElementById('resourcesGrid').innerHTML = resources.map(r =>
+    `<div class="resource-card">
+      <div class="resource-type" style="color:${r.typeColor}">${r.type}</div>
+      <div class="resource-name">${r.name}</div>
+      <div class="resource-desc">${r.desc}</div>
+      <a href="${r.url}" target="_blank" class="btn btn-sm btn-secondary">Open Resource ↗</a>
+    </div>`
+  ).join('');
+}
+
+// ============================================================
+// FORUM
+// ============================================================
+function renderForum() {
+  document.getElementById('forumPosts').innerHTML = forumPosts.map(p =>
+    `<div class="forum-post">
+      <div class="post-header">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;">
+            <div style="width:28px;height:28px;border-radius:6px;background:${p.color}22;color:${p.color};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:'Fira Code',monospace;flex-shrink:0;">${p.avatar}</div>
+            <div class="post-title">${p.title}</div>
+          </div>
+          <div class="post-tags">${p.tags.map(t=>`<div class="tag tag-${t==='beginner'?'beginner':t==='advanced'?'advanced':'intermediate'}">${t}</div>`).join('')}</div>
+        </div>
+      </div>
+      <div class="post-excerpt">${p.excerpt}</div>
+      <div class="post-meta">
+        <span>👍 ${p.likes}</span>
+        <span>💬 ${p.replies} replies</span>
+        <span>🕐 ${p.time}</span>
+        <span style="color:var(--text-3);">by ${p.author}</span>
+      </div>
+    </div>`
+  ).join('');
+}
+
+function submitPost() {
+  const title = document.getElementById('postTitle').value.trim();
+  const body = document.getElementById('postBody').value.trim();
+  if (!title) { showToast('⚠️', 'Please add a title to your post'); return; }
+  forumPosts.unshift({ author:'you', avatar:'ME', color:'var(--amber)', title, excerpt:body||'No details yet.', tags:['question'], replies:0, likes:0, time:'just now' });
+  renderForum();
+  document.getElementById('postTitle').value = '';
+  document.getElementById('postBody').value = '';
+  showToast('🎉', 'Post submitted to the community!');
+}
+
+// ============================================================
+// PROGRESS
+// ============================================================
+function renderProgress() {
+  // Ring
+  const pct = 42;
+  const offset = 226 - (226 * pct / 100);
+  document.getElementById('overallRing').style.strokeDashoffset = offset;
+
+  // Weekly chart
+  const days = [40, 80, 55, 100, 70, 30, 60];
+  const max = Math.max(...days);
+  document.getElementById('weekChart').innerHTML = days.map((d,i) =>
+    `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;">
+      <div style="width:100%;border-radius:4px 4px 0 0;background:${i===3?'var(--amber)':'var(--border2)'};height:${(d/max)*100}%;min-height:4px;transition:height 0.5s ${i*0.05}s;opacity:${i===3?1:0.7};"></div>
+    </div>`
+  ).join('');
+
+  // Module breakdown
+  document.getElementById('progressModules').innerHTML = modules.map(m => {
+    const pct = Math.round((m.done/m.lessons)*100);
+    const colors = { beginner:'var(--green)', intermediate:'var(--amber)', advanced:'var(--red)' };
+    return `<div class="track-item">
+      <div class="track-icon" style="background:var(--bg3);">${m.icon}</div>
+      <div class="track-info">
+        <div class="track-name">${m.title}</div>
+        <div style="margin-top:5px;">
+          <div class="module-progress-bar"><div class="module-progress-fill" style="width:${pct}%;background:${colors[m.level]};"></div></div>
+        </div>
+        <div class="track-sub" style="margin-top:4px;">${m.done}/${m.lessons} lessons · ${m.level}</div>
+      </div>
+      <div class="track-right">
+        <div class="track-pct" style="color:${colors[m.level]}">${pct}%</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// BADGES
+// ============================================================
+function renderBadges() {
+  document.getElementById('badgesGrid').innerHTML = badges.map(b =>
+    `<div class="badge-item ${b.earned?'':'locked'}">
+      <div class="badge-icon" style="background:${b.bg};border-color:${b.earned?b.border:'transparent'};box-shadow:${b.earned?'0 0 16px '+b.bg:'none'}">${b.icon}</div>
+      <div class="badge-name">${b.name}</div>
+      <div class="badge-desc">${b.desc}</div>
+      ${b.earned ? '<div style="font-size:10px;color:var(--green);font-family:\'Fira Code\',monospace;">✓ Earned</div>' : '<div style="font-size:10px;color:var(--text-3);font-family:\'Fira Code\',monospace;">🔒 Locked</div>'}
+    </div>`
+  ).join('');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+(function init() {
+  renderActivity();
+  renderModules();
+  renderExerciseTabs();
+  loadExercise(0, null);
+  renderProjects();
+  renderVideos();
+  renderResources();
+  renderForum();
+  renderProgress();
+  renderBadges();
+
+  // Animate XP bar
+  setTimeout(() => { document.getElementById('xpFill').style.width = '42%'; }, 300);
+  // Animate progress ring
+  setTimeout(() => { renderProgress(); }, 400);
+})();
+</script>
+</body>
+</html>
